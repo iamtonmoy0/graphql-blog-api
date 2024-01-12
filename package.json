@@ -1,0 +1,19 @@
+{
+  "name": "graphql-blog-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "concurrently  \"npx tsc --watch \" \"nodemon  -q dist/app.js\" ",
+    "build": "tsc ",
+    "start": "node dist/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tonmoy Islam",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.3"
+  }
+}
