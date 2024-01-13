@@ -1,8 +1,9 @@
-import { GraphQLList, GraphQLObjectType, GraphQLSchema } from "graphql";
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
 import { BlogType, CommentType, UserType } from "../schema/schema";
 import User from "../models/user.model";
 import Blog from "../models/blog.model";
 import Comment from "../models/comment.model";
+import { Document } from "mongoose";
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
@@ -29,6 +30,31 @@ const RootQuery = new GraphQLObjectType({
 			return await Comment.find();
 		},
   },
+})
+
+const mutations=new GraphQLObjectType({
+	name:"mutations",
+	fields:{
+		signup:{
+			type:UserType,
+			args:{
+				name:{type:new GraphQLNonNull(GraphQLString)},
+				email:{type:new GraphQLNonNull(GraphQLString)},
+				password:{type:new GraphQLNonNull(GraphQLString)},
+			},
+			async resolve(parent,{name,email,password}){
+				let existingUser:Document<any,any,any>
+				try {
+					existingUser=await User.findOne({email:email})
+					if(existingUser)return new Error("User already exist!")
+					const user=await User.create({name,email,password})
+				} catch (error) {
+					return new Error("Sign up failed .Try again!")
+				}
+			}
+		}
+
+	}
 })
 
 export default new GraphQLSchema({query:RootQuery})
