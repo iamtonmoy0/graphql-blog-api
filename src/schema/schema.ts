@@ -6,20 +6,20 @@ import {
   GraphQLString,
 } from "graphql";
 
-const UserType = new GraphQLObjectType({
+export const UserType = new GraphQLObjectType({
   name: "UserType",
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLID) },
+    id: { type: new GraphQLNonNull(GraphQLID) },
     name: { type: GraphQLString },
-    email: { type: GraphQLScalarType },
+    email: { type: GraphQLString },
     password: { type: GraphQLString },
   }),
 });
 
-const BlogType = new GraphQLObjectType({
+export const BlogType = new GraphQLObjectType({
   name: "Blog",
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLID) },
+    id: { type: new GraphQLNonNull(GraphQLID) },
     title: { type: GraphQLString },
     content: {
       type: GraphQLString,
@@ -28,10 +28,10 @@ const BlogType = new GraphQLObjectType({
   }),
 });
 
-const CommentType = new GraphQLObjectType({
+export const CommentType = new GraphQLObjectType({
   name: "Comment",
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLID) },
-    text: { type: GraphQLNonNull(GraphQLString) },
+    id: { type: new GraphQLNonNull(GraphQLID) },
+    text: { type: new GraphQLNonNull(GraphQLString) },
   }),
 });
