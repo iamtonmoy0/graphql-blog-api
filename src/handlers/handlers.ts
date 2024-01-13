@@ -4,6 +4,7 @@ import User from "../models/user.model";
 import Blog from "../models/blog.model";
 import Comment from "../models/comment.model";
 import { Document } from "mongoose";
+import { hashPassword } from "../utils/passwordHash";
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
@@ -47,7 +48,9 @@ const mutations=new GraphQLObjectType({
 				try {
 					existingUser=await User.findOne({email:email})
 					if(existingUser)return new Error("User already exist!")
-					const user=await User.create({name,email,password})
+					const hashPass=await hashPassword(password)
+					const user=await User.create({name,email,password:hashPass})
+					return user
 				} catch (error) {
 					return new Error("Sign up failed .Try again!")
 				}
