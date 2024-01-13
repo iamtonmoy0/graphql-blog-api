@@ -1,10 +1,16 @@
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from "graphql";
 import { BlogType, CommentType, UserType } from "../schema/schema";
 import User from "../models/user.model";
 import Blog from "../models/blog.model";
 import Comment from "../models/comment.model";
 import { Document } from "mongoose";
-import { hashPassword } from "../utils/passwordHash";
+import { hashPassword, verifyPassHash } from "../utils/passwordHash";
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
@@ -22,42 +28,60 @@ const RootQuery = new GraphQLObjectType({
       async resolve() {
         return await Blog.find();
       },
-	  
     },
-	//   get all comments
-	comments: {	
-		type: new GraphQLList(CommentType),
-		async resolve() {
-			return await Comment.find();
-		},
+    //   get all comments
+    comments: {
+      type: new GraphQLList(CommentType),
+      async resolve() {
+        return await Comment.find();
+      },
+    },
   },
-})
+});
 
-const mutations=new GraphQLObjectType({
-	name:"mutations",
-	fields:{
-		signup:{
-			type:UserType,
-			args:{
-				name:{type:new GraphQLNonNull(GraphQLString)},
-				email:{type:new GraphQLNonNull(GraphQLString)},
-				password:{type:new GraphQLNonNull(GraphQLString)},
-			},
-			async resolve(parent,{name,email,password}){
-				let existingUser:Document<any,any,any>
-				try {
-					existingUser=await User.findOne({email:email})
-					if(existingUser)return new Error("User already exist!")
-					const hashPass=await hashPassword(password)
-					const user=await User.create({name,email,password:hashPass})
-					return user
-				} catch (error) {
-					return new Error("Sign up failed .Try again!")
-				}
-			}
-		}
+const mutations = new GraphQLObjectType({
+  name: "mutations",
+  fields: {
+    signup: {
+      type: UserType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, { name, email, password }) {
+        let existingUser: Document<any, any, any>;
+        try {
+          existingUser = await User.findOne({ email: email });
+          if (existingUser) return new Error("User already exist!");
+          const hashPass = await hashPassword(password);
+          const user = await User.create({ name, email, password: hashPass });
+          return user;
+        } catch (error) {
+          return new Error("Sign up failed .Try again!");
+        }
+      },
+    },
+    login: {
+      type: UserType,
+      args: {
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, { email, password }) {
+        try {
+          let user = await User.findOne({ email });
+          console.log(user);
+          if (!user) return new Error("user not exist");
+          const isMatched = await verifyPassHash(password, user.password);
+          if (!isMatched) return new Error("Wrong password");
+          return user;
+        } catch (error) {
+          return new Error(error.message);
+        }
+      },
+    },
+  },
+});
 
-	}
-})
-
-export default new GraphQLSchema({query:RootQuery})
+export default new GraphQLSchema({ query: RootQuery, mutation: mutations });
