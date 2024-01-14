@@ -10,6 +10,14 @@ const commentModel = new Schema({
     required: true,
     default: Date.now(),
   },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  comments: {
+    type: Schema.Types.ObjectId,
+    ref: "Comment",
+  },
 });
 
 export default model("Comment", commentModel);

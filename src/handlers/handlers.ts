@@ -43,6 +43,7 @@ const RootQuery = new GraphQLObjectType({
 const mutations = new GraphQLObjectType({
   name: "mutations",
   fields: {
+    // register
     signup: {
       type: UserType,
       args: {
@@ -63,6 +64,7 @@ const mutations = new GraphQLObjectType({
         }
       },
     },
+    // login
     login: {
       type: UserType,
       args: {
@@ -81,6 +83,7 @@ const mutations = new GraphQLObjectType({
         }
       },
     },
+    // create blog
     addBlog: {
       type: BlogType,
       args: {
