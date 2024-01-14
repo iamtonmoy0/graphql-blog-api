@@ -1,4 +1,5 @@
 import {
+  GraphQLID,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -71,11 +72,59 @@ const mutations = new GraphQLObjectType({
       async resolve(parent, { email, password }) {
         try {
           let user = await User.findOne({ email });
-          console.log(user);
           if (!user) return new Error("user not exist");
           const isMatched = await verifyPassHash(password, user.password);
           if (!isMatched) return new Error("Wrong password");
           return user;
+        } catch (error) {
+          return new Error(error.message);
+        }
+      },
+    },
+    addBlog: {
+      type: BlogType,
+      args: {
+        title: { type: new GraphQLNonNull(GraphQLString) },
+        content: { type: new GraphQLNonNull(GraphQLString) },
+        date: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, { title, content, date }) {
+        try {
+          const blog = await Blog.create({ title, content, date });
+          return blog;
+        } catch (error) {
+          return new Error(error);
+        }
+      },
+    },
+    // update blog
+    updateBlog: {
+      type: BlogType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+        title: { type: new GraphQLNonNull(GraphQLString) },
+        content: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, { id, title, content }) {
+        try {
+          const blog = await Blog.findById(id);
+          if (!blog) {
+            throw new Error("The blog does not exist");
+          }
+          return Blog.findByIdAndUpdate(id, { title, content }, { new: true });
+        } catch (error) {
+          return new Error(error);
+        }
+      },
+    },
+    // delete blog
+    removeBlog: {
+      type: BlogType,
+      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
+      async resolve(parent, { id }) {
+        try {
+          const res = await Blog.findByIdAndDelete(id);
+          return res;
         } catch (error) {
           return new Error(error.message);
         }
