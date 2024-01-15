@@ -134,11 +134,19 @@ const mutations = new GraphQLObjectType({
       type: BlogType,
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
       async resolve(parent, { id }) {
+        const session = await startSession();
         try {
-          const res = await Blog.findByIdAndDelete(id);
-          return res;
+          session.startTransaction();
+          const res = await Blog.findById(id).populate("user");
+          if (!res) return new Error("Blog does not exist");
+          const user = res.user;
+          user.blogs.pull(res._id);
+          await user.save({ session });
+          return await res.pull({ session });
         } catch (error) {
           return new Error(error.message);
+        } finally {
+          session.commitTransaction();
         }
       },
     },
