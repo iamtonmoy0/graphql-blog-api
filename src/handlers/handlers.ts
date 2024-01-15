@@ -10,7 +10,7 @@ import { BlogType, CommentType, UserType } from "../schema/schema";
 import User from "../models/user.model";
 import Blog from "../models/blog.model";
 import Comment from "../models/comment.model";
-import { Document } from "mongoose";
+import { Document, startSession } from "mongoose";
 import { hashPassword, verifyPassHash } from "../utils/passwordHash";
 
 const RootQuery = new GraphQLObjectType({
@@ -90,13 +90,22 @@ const mutations = new GraphQLObjectType({
         title: { type: new GraphQLNonNull(GraphQLString) },
         content: { type: new GraphQLNonNull(GraphQLString) },
         date: { type: new GraphQLNonNull(GraphQLString) },
+        user: { type: new GraphQLNonNull(GraphQLID) },
       },
-      async resolve(parent, { title, content, date }) {
+      async resolve(parent, { title, content, date, user }) {
+        const session = await startSession();
         try {
-          const blog = await Blog.create({ title, content, date });
+          session.startTransaction();
+          const existUser = await User.findById(user);
+          if (!existUser) return new Error("User Does not exist");
+          const blog = await Blog.create({ title, content, date, user });
+          existUser.blogs.push(blog._id);
+          await existUser.save({ session });
           return blog;
         } catch (error) {
           return new Error(error);
+        } finally {
+          await session.commitTransaction();
         }
       },
     },

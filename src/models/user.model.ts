@@ -13,10 +13,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  blogs: {
+  blogs:[ {
     type: Schema.Types.ObjectId,
     ref: "Blog",
-  },
+  }],
   comments: {
     type: Schema.Types.ObjectId,
     ref: "Comment",
