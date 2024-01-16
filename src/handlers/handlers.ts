@@ -136,13 +136,15 @@ const mutations = new GraphQLObjectType({
       async resolve(parent, { id }) {
         const session = await startSession();
         try {
+          // TODO: need to work on that
           session.startTransaction();
           const res = await Blog.findById(id).populate("user");
+          console.log(res);
           if (!res) return new Error("Blog does not exist");
           const user = res.user;
-          user.blogs.pull(res._id);
+          user.blogs.pull(id);
           await user.save({ session });
-          return await res.pull({ session });
+          return await res.deleteOne({ session });
         } catch (error) {
           return new Error(error.message);
         } finally {
