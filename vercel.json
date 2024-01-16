@@ -1,15 +1,16 @@
 {
 	"version": 2,
 	"builds": [
-		{
-			"src": "./dist/app.js",
-			"use": "@vercel/node"
-		}
+	  {
+		"src": "dist/app.js", // Adjust the path to point to your compiled JavaScript entry point
+		"use": "@vercel/node"
+	  }
 	],
 	"routes": [
-		{
-			"src": "/(.*)",
-			"dest": "/dist/app.js"
-		}
+	  {
+		"src": "/(.*)",
+		"dest": "dist/app.js" // Adjust the path if necessary
+	  }
 	]
-}
+  }
+  
