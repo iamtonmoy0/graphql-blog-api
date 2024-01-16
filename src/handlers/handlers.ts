@@ -34,7 +34,7 @@ const RootQuery = new GraphQLObjectType({
     comments: {
       type: new GraphQLList(CommentType),
       async resolve() {
-        return await Comment.find();
+        return await Comment.find().populate("blog").populate("user");
       },
     },
   },
@@ -145,6 +145,42 @@ const mutations = new GraphQLObjectType({
           user.blogs.pull(id);
           await user.save({ session });
           return await res.deleteOne({ session });
+        } catch (error) {
+          return new Error(error.message);
+        } finally {
+          session.commitTransaction();
+        }
+      },
+    },
+    // add comment
+    addComment: {
+      type: CommentType,
+      args: {
+        blog: { type: new GraphQLNonNull(GraphQLID) },
+        user: { type: new GraphQLNonNull(GraphQLID) },
+        text: { type: new GraphQLNonNull(GraphQLString) },
+        date: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, { user, blog, text, date }) {
+        const session = await startSession();
+        try {
+          session.startTransaction();
+          // find blog and user
+          const existBlog = await Blog.findById(blog);
+          const existUser = await User.findById(user);
+          if (!existBlog || !existUser) {
+            return new Error("Blog and User not exist");
+          }
+          const comment = await Comment.create(
+            { text, date, user, blog },
+            { new: true }
+          ).populate("user")
+          console.log(comment);
+          existUser.comments.push(comment._id);
+          existBlog.comments.push(comment._id);
+          await existBlog.save({ session });
+          await existUser.save({ session });
+          return comment;
         } catch (error) {
           return new Error(error.message);
         } finally {

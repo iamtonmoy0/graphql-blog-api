@@ -14,9 +14,9 @@ const commentModel = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-  comments: {
+  blog: {
     type: Schema.Types.ObjectId,
-    ref: "Comment",
+    ref: "Blog",
   },
 });
 

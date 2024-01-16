@@ -13,9 +13,9 @@ const blogSchema = new Schema({
     type: Date,
     required: true,
   },
-  blog: {
+  comments: {
     type: Schema.Types.ObjectId,
-    ref: "Blog",
+    ref: "Comment",
   },
   user: {
     type: Schema.Types.ObjectId,
